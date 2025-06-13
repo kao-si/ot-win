@@ -484,7 +484,7 @@ season <- md2(202122, "brk", "expavsn", 7.04)
 # 'Check-Output_Game-Data.txt':
 
 # Total seconds not equal to sum of tied, visitor lead and host lead seconds
-# 
+
 # Note: 'totsc' does not exist in original data
 # # A tibble: 4 × 8
 # date visitor host  tiesc vledsc hledsc totsc otnum
