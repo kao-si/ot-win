@@ -1,0 +1,76 @@
+---
+title: "Preliminary Analysis Report"
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(fixest)
+library(broom)
+library(modelsummary)
+library(modelr)
+```
+
+```{r}
+# Load data
+dat <- read_rds("Data_HP.rds")
+
+# Transform variable 'hwin' to a numeric variable 'nhwin' (for feglm)
+dat <- dat %>% mutate(nhwin = case_when(hwin == "Host Won" ~ 1,
+                                        hwin == "Host Lost" ~ 0))
+```
+
+## Major Findings
+
+When the competition is relatively intense, here indexed by a relatively greater number of ties in the 4th quarter, being forced to the first OT increases the home team's probability of eventually winning the game as compared to otherwise. This effect diminishes when the competition is relatively less intense (i.e., a relatively smaller number of ties in the 4th quarter).
+
+This interaction effect remains robust when controlling for the fixed effects of home team, away team, and season.
+
+```{r}
+mod1_1 <- feglm(nhwin ~ hforced * tie4q, family = binomial, dat)
+mod1_2 <- feglm(nhwin ~ hforced * tie4q | host, family = binomial, dat)
+mod1_3 <- feglm(nhwin ~ hforced * tie4q | host + visitor,
+family = binomial, dat)
+mod1_4 <- feglm(nhwin ~ hforced * tie4q | host + visitor + season,
+family = binomial, dat)
+
+modelsummary(
+    list(mod1_1, mod1_2, mod1_3, mod1_4),
+    stars = TRUE,
+    gof_omit = "R2 Adj.|R2 Within|R2 Within Adj.|AIC|BIC|RMSE",
+    coef_map = c(
+        "(Intercept)" = "Constant",
+        "hforcedHost Forced to OT1" = "Host Was Forced to OT1",
+        "tie4q" = "Number of Ties in Q4",
+        "hforcedHost Forced to OT1:tie4q" = "Interaction Effect"
+    ),
+    statistic = c("(se = {std.error})", "(p = {p.value})"),
+    output = "markdown"
+)
+```
+
+---
+
+As shown in the figure below, the positive difference in winning probability between home teams that were forced to the first OT and those that forced the first OT increases as the number of ties in the 4th quarter (ranged between 1 and 11) increases.
+
+_(The predicted values are based on Model 4 above)_
+
+```{r}
+dat <- add_predictions(dat, mod1_4, var = "pred1")
+
+dat %>% ggplot() +
+geom_smooth(
+    method = "glm",
+    aes(x = tie4q, y = pred1, linetype = hforced),
+    method.args = list(family = "binomial"),
+    se = FALSE
+) +
+labs(
+    y = "Host Winning Probability",
+    x = "Number of Ties in Q4",
+    color = NULL
+) +
+scale_x_continuous(limits = c(1, 11), breaks = seq(1, 11, by = 1)) +
+ggpubr::theme_pubr()
+```

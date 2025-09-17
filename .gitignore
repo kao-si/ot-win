@@ -3,6 +3,8 @@
 .RData
 .Ruserdata
 .DS_Store
-Raw-Data/**
+nba/Raw-Data/**
+international/Raw-Data/**
 *.rds
 *.RData
+*.Rproj
