@@ -1,4 +1,3 @@
-
 # OT Win - International
 
 # Check and wrangle raw data
@@ -22,31 +21,39 @@ cat("**Logical Relation Violations**\n")
 
 cat("\nQuarter scores not equal to total score, Visitor\n")
 game %>% filter(vsco_q1 + vsco_q2 + vsco_q3 + vsco_q4 + vsco_ot
-                != vsco_tot) %>% select(1, 3:5, vsco_q1:vsco_tot)
+                != vsco_tot) %>% select(1, 3:5, vsco_q1:vsco_tot) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nQuarter scores not equal to total score, Host\n")
 game %>% filter(hsco_q1 + hsco_q2 + hsco_q3 + hsco_q4 + hsco_ot
-                != hsco_tot) %>% select(1, 3:5, hsco_q1:hsco_tot)
+                != hsco_tot) %>% select(1, 3:5, hsco_q1:hsco_tot) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nVisitor quarter scores not equal to host quarter scores\n")
 game %>% filter(vsco_q1 + vsco_q2 + vsco_q3 + vsco_q4 !=
                 hsco_q1 + hsco_q2 + hsco_q3 + hsco_q4) %>%
-                select(1, 3:5, vsco_q1:vsco_q4, hsco_q1:hsco_q4)
+                select(1, 3:5, vsco_q1:vsco_q4, hsco_q1:hsco_q4) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nVisitor total score equal to host total score\n")
-game %>% filter(vsco_tot == hsco_tot) %>% select(1, 3:5, vsco_tot, hsco_tot)
+game %>% filter(vsco_tot == hsco_tot) %>% select(1, 3:5, vsco_tot, hsco_tot) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nNumber of ties in 4q smaller than that in 2m\n")
-game %>% filter(tie4q < tie2m) %>% select(1, 3:5, tie4q, tie2m)
+game %>% filter(tie4q < tie2m) %>% select(1, 3:5, tie4q, tie2m) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nTied duration in 4q smaller than that in 2m\n")
-game %>% filter(tiesc4q < tiesc2m) %>% select(1, 3:5, tiesc4q, tiesc2m)
+game %>% filter(tiesc4q < tiesc2m) %>% select(1, 3:5, tiesc4q, tiesc2m) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nNumber of lead changes in 4q smaller than that in 2m\n")
-game %>% filter(ledchg4q < ledchg2m) %>% select(1, 3:5, ledchg4q, ledchg2m)
+game %>% filter(ledchg4q < ledchg2m) %>% select(1, 3:5, ledchg4q, ledchg2m) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 cat("\nHost lead duration in 4q smaller than that in 2m\n")
-game %>% filter(hledsc4q < hledsc2m) %>% select(1, 3:5, hledsc4q, hledsc2m)
+game %>% filter(hledsc4q < hledsc2m) %>% select(1, 3:5, hledsc4q, hledsc2m) %>%
+  tibble::as_tibble() %>% print(n = Inf, width = Inf)
 
 ## Missing values ====
 cat("\n**Missing Values**\n")
@@ -78,8 +85,13 @@ list_excl_league <- setNames(
 )
 
 cat("\nRows with missing values in each variable (last column)\n")
-map(col_wo_na, pickna)
-map2(col_w_na, list_excl_league, pickna2)
+cat("\nVariables without systematic missing values\n")
+walk(col_wo_na, ~ pickna(.x) %>% tibble::as_tibble() %>%
+print(n = Inf, width = Inf))
+
+cat("\nVariables with systematic missing values\n")
+walk2(col_w_na, list_excl_league, ~ pickna2(.x, .y) %>% tibble::as_tibble() %>%
+print(n = Inf, width = Inf))
 
 ## Outliers ====
 
@@ -141,12 +153,13 @@ pickol <- function(lg_name, var, n1, n2) {
   " for league ", lg_name, "\n"))
   game %>%
     filter({{ var }} >= n1 & {{ var }} <= n2 & league == lg_name) %>%
-    select(1, 3:5, {{ var }})
+    select(1, 3:5, {{ var }}) %>%
+    tibble::as_tibble() %>% print(n = Inf, width = Inf)
 }
 
-cat("\nRows with outliers in each variable (last column)\n")
-
 # Example code:
+
+# elb
 # pickol("elb", vsco_q4, 29, 34)
 
 # Stop output redirection
@@ -168,7 +181,8 @@ pickna_st <- function(var) {
 }
 
 cat("\nRows with missing values in each variable (last column)\n")
-map(colnames(season), pickna_st)
+walk(colnames(season), ~ pickna_st(.x) %>% tibble::as_tibble() %>%
+print(n = Inf, width = Inf))
 
 ## Outliers ====
 
@@ -230,12 +244,13 @@ pickol_st <- function(lg_name, var, n1, n2) {
   " for league ", lg_name, "\n"))
   season %>%
     filter({{ var }} >= n1 & {{ var }} <= n2 & league == lg_name) %>%
-    select(1:3, {{ var }})
+    select(1:3, {{ var }}) %>%
+    tibble::as_tibble() %>% print(n = Inf, width = Inf)
 }
 
-cat("\nRows with outliers in each variable (last column)\n")
-
 # Example code:
+
+# jbl
 # pickol_st("jbl", wpcsn, 6.7, 6.7)
 
 # Stop output redirection
@@ -255,6 +270,8 @@ md <- function(lg_name, datev, vname, var, newval) {
 }
 
 # Example code:
+
+# elb
 # game <- md("elb", 20080111, "Efes Pilsen", "att", 3601)
 
 ## Season-Level Data ====
@@ -269,4 +286,6 @@ md_st <- function(lg_name, sn, tname, var, newval) {
 }
 
 # Example code:
+
+# jbl
 # season <- md_st("jbl", 201617, "宇都宮ブレックス", "wpcsn", 76.8)
